@@ -106,15 +106,13 @@ The metrics are calculated as follows:
 
 **Relative Mean Absolute Error:**
 
-\[
-rMAE = \frac{\sum_i |u_i^{pred}-u_i^{true}|}{\sum_i |u_i^{true}|}
-\]
+$rMAE = \frac{\sum_i |u_i^{pred}-u_i^{true}|}{\sum_i |u_i^{true}|}$
 
 **Relative Root Mean Squared Error:**
 
-\[
-rRMSE = \sqrt{\frac{\sum_i (u_i^{pred}-u_i^{true})^2}{\sum_i (u_i^{true})^2}}
-\]
+$$
+rMAE = \frac{\sum_i |u_i^{pred}-u_i^{true}|}{\sum_i |u_i^{true}|}
+$$
 
 For the nonlinear Schrödinger equation, the evaluation is performed using the magnitude of the complex-valued solution.
 
