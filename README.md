@@ -1,113 +1,160 @@
 # Evaluating PINNsFormer for Solving Partial Differential Equations
 
-A comparative study and implementation of **Physics-Informed Neural Networks (PINNs)** and **PINNsFormer**, a Transformer-based architecture for solving partial differential equations (PDEs).
+This repository contains the implementation and evaluation of PINNsFormer on five benchmark partial differential equations (PDEs), comparing its performance with standard Physics-Informed Neural Networks (PINNs).
 
-This project was developed as a bachelor's thesis at **Amirkabir University of Technology (Tehran Polytechnic)**.
+The project was conducted as part of a bachelor's thesis in Mathematics and Applications at Amirkabir University of Technology.
 
-## Overview
+## Project Overview
 
-Physics-Informed Neural Networks (PINNs) provide a mesh-free approach for approximating solutions to partial differential equations by incorporating the governing equations and their boundary/initial conditions directly into the training objective.
+PINNsFormer is a Transformer-based framework for solving PDEs using physics-informed neural networks. Unlike standard PINNs, which process individual space-time points, PINNsFormer uses short pseudo-time sequences and attention mechanisms.
 
-This project implements **PINNsFormer**, which introduces a pseudo-temporal sequence and a self-attention mechanism into the PINN framework. The goal is to investigate whether explicitly modeling dependencies between nearby time points can improve the accuracy of PINNs on challenging time-dependent PDEs.
+This project investigates the performance of this approach on five PDE benchmark problems, with particular attention to accuracy, computational cost, and its application to equations involving higher-order derivatives.
 
-The implementation is evaluated against a standard PINN baseline on five benchmark problems:
+## Repository Structure
 
-* Burgers' equation
-* Allen–Cahn equation
-* Nonlinear Schrödinger equation
-* Kuramoto–Sivashinsky equation
-* Korteweg–de Vries (KdV) equation
+The repository contains five independent Jupyter notebooks:
 
-The PINNsFormer architecture uses a pseudo-sequence generator, spatio-temporal embedding, multi-head self-attention, an encoder–decoder structure, and a learnable Wavelet activation function.
+| Notebook | PDE Problem |
+|---|---|
+| `PINNsFormer_Burgers.ipynb` | Burgers Equation |
+| `PINNsFormer_AllenCahn.ipynb` | Allen–Cahn Equation |
+| `PINNsFormer_Schrodinger.ipynb` | Nonlinear Schrödinger Equation |
+| `PINNsFormer_KS.ipynb` | Kuramoto–Sivashinsky Equation |
+| `PINNsFormer_KdV.ipynb` | Korteweg–de Vries Equation |
 
-## Project Objectives
-
-The main objectives of this project are:
-
-1. Implement the PINNsFormer architecture from the original paper.
-2. Implement a standard PINN as a baseline model.
-3. Evaluate both models on five different PDE benchmarks.
-4. Compare their numerical accuracy using relative MAE (rMAE) and relative RMSE (rRMSE).
-5. Analyze the computational cost and training time of the two approaches.
-6. Investigate the effect of the attention-based architecture on PDEs with different characteristics.
+Each notebook implements the corresponding problem using both standard PINNs and PINNsFormer and evaluates their predictions against reference solutions.
 
 ## Methodology
 
 ### Standard PINN
 
-The baseline model is a fully connected neural network with:
-
-* 4 hidden layers
-* 512 neurons per hidden layer
-* Tanh activation
-* Point-wise `(x, t)` input
+The standard PINN uses a fully connected neural network that takes spatial and temporal coordinates as input and predicts the solution of the corresponding PDE.
 
 ### PINNsFormer
 
-The implemented PINNsFormer model consists of:
+PINNsFormer uses a sequence-based input representation and a Transformer architecture. Its main components include:
 
-1. **Pseudo-sequence generator**
-   Converts each `(x, t)` input into a sequence of nearby time points.
+- Pseudo-sequence generation from space-time coordinates.
+- Spatio-temporal embedding.
+- Transformer encoder-decoder architecture.
+- Learnable Wave Activation (WaveAct).
 
-2. **Spatio-temporal mixer**
-   Projects the two-dimensional inputs into a 32-dimensional representation.
+### Training Configuration
 
-3. **Transformer-based encoder–decoder**
-   Uses self-attention and cross-attention to model dependencies between the elements of the temporal sequence.
+The main configuration used for PINNsFormer includes:
 
-4. **Wavelet activation**
-   Uses a learnable combination of sine and cosine functions.
+| Parameter | Value |
+|---|---:|
+| Sequence length (`k`) | 5 |
+| Time step (`dt_step`) | 0.0001 |
+| Embedding dimension (`d_model`) | 32 |
+| Number of attention heads | 2 |
+| Number of Transformer layers (`N`) | 1 |
+| Hidden dimension (`d_hidden`) | 512 |
+| Optimizer | L-BFGS |
+| Maximum iterations | 500 |
 
-5. **Output layer**
-   Produces the approximate PDE solution for each element of the sequence.
+The specific problem settings and network configurations are provided in the corresponding notebooks.
 
-The main configuration used in the experiments is `k = 5`, `d_model = 32`, `2` attention heads, and one encoder layer.
+## Requirements
 
-## PDE Benchmarks
+The project uses Python and the following main libraries:
 
-| Problem               | Main characteristic                            |
-| --------------------- | ---------------------------------------------- |
-| Burgers               | Nonlinear convection and rapid variation       |
-| Allen–Cahn            | Stiff reaction–diffusion dynamics              |
-| Nonlinear Schrödinger | Complex-valued solution and nonlinear dynamics |
-| Kuramoto–Sivashinsky  | Fourth-order PDE with challenging dynamics     |
-| KdV                   | Third-order nonlinear PDE                      |
+- NumPy
+- PyTorch
+- Matplotlib
+- SciPy
+- tqdm
+- Jupyter Notebook
 
-Reference solutions were obtained from the datasets associated with the original PINN work for four equations, while a closed-form analytical solution was used for the Kuramoto–Sivashinsky equation.
+The required packages are listed in `requirements.txt`.
+
+## How to Run
+
+1. Clone or download this repository.
+2. Install the required dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Open the notebook corresponding to the PDE problem you want to reproduce:
+
+   ```bash
+   jupyter notebook
+   ```
+
+4. Run the notebook cells sequentially.
+
+Each notebook contains the implementation, training procedure, evaluation, and visualization for its corresponding PDE problem.
+
+## Reference Data
+
+The Burgers, Allen–Cahn, nonlinear Schrödinger, and KdV notebooks use reference datasets obtained from the original PINNs repository by Maziar Raissi and collaborators.
+
+These datasets are downloaded automatically by the corresponding notebooks.
+
+The Kuramoto–Sivashinsky notebook uses an analytical solution defined directly in the notebook and does not require an external reference dataset.
+
+An active internet connection is therefore required to run the four notebooks that download external datasets.
+
+## Evaluation Metrics
+
+The models are evaluated using the relative Mean Absolute Error (rMAE) and relative Root Mean Squared Error (rRMSE).
+
+The metrics are calculated as follows:
+
+**Relative Mean Absolute Error:**
+
+\[
+rMAE = \frac{\sum_i |u_i^{pred}-u_i^{true}|}{\sum_i |u_i^{true}|}
+\]
+
+**Relative Root Mean Squared Error:**
+
+\[
+rRMSE = \sqrt{\frac{\sum_i (u_i^{pred}-u_i^{true})^2}{\sum_i (u_i^{true})^2}}
+\]
+
+For the nonlinear Schrödinger equation, the evaluation is performed using the magnitude of the complex-valued solution.
 
 ## Results
 
-PINNsFormer achieved a lower rMAE than the standard PINN on all five benchmark problems.
+The following table summarizes the relative MAE obtained by both methods across the five benchmark problems.
 
-| Equation              | PINN rMAE | PINNsFormer rMAE | Reduction |
-| --------------------- | --------- | ---------------- | --------- |
-| Burgers               | 0.0262    | 0.0120           | 54%       |
-| Allen–Cahn            | 0.9916    | 0.3790           | 62%       |
-| Nonlinear Schrödinger | 0.0601    | 0.0032           | 95%       |
-| Kuramoto–Sivashinsky  | 0.3012    | 0.0001           | >99%      |
-| KdV                   | 0.0820    | 0.0184           | 78%       |
+| PDE Problem | Standard PINN rMAE | PINNsFormer rMAE | Reduction |
+|---|---:|---:|---:|
+| Burgers | 0.0262 | 0.0120 | 54% |
+| Allen–Cahn | 0.9916 | 0.3790 | 62% |
+| Nonlinear Schrödinger | 0.0601 | 0.0032 | 95% |
+| Kuramoto–Sivashinsky | 0.3012 | 0.0001 | >99% |
+| Korteweg–de Vries | 0.0820 | 0.0184 | 78% |
 
-These results show that the attention-based architecture improved the numerical accuracy across all five experiments, although the magnitude of the improvement varied substantially between equations.
+PINNsFormer achieved lower rMAE than the standard PINN in all five benchmark problems.
 
-### Computational Cost
+## Computational Cost
 
-The improved accuracy comes with a significant increase in training time.
+The measured training times are summarized below.
 
-| Equation             | PINN    | PINNsFormer |
-| -------------------- | ------- | ----------- |
-| Burgers              | 4m 1s   | 28m 25s     |
-| Allen–Cahn           | 1m 28s  | 32m 53s     |
-| Schrödinger          | 7m 12s  | 49m 59s     |
-| Kuramoto–Sivashinsky | 2m 53s  | 53m 57s     |
-| KdV                  | 10m 38s | 1h 49m      |
+| PDE Problem | Standard PINN | PINNsFormer |
+|---|---:|---:|
+| Burgers | 4m 01s | 28m 25s |
+| Allen–Cahn | 1m 28s | 32m 53s |
+| Nonlinear Schrödinger | 7m 12s | 49m 59s |
+| Kuramoto–Sivashinsky | 2m 53s | 53m 57s |
+| Korteweg–de Vries | 10m 38s | 1h 49m |
 
-On average, PINNsFormer required approximately **13.1× more training time** than the standard PINN.
+These measurements reflect the computational cost observed in the original experiments and may vary depending on hardware and execution environment.
 
-## Key Findings
+## Reproducibility Notes
 
-* PINNsFormer achieved lower relative error on **all five PDEs**.
-* The improvement ranged from **54% to more than 99%** in rMAE.
-* The largest improvement was obtained for the **Kuramoto–Sivashinsky equation**, where rMAE decreased from `0.3012` to `0.0001`.
-* The nonlinear Schrödinger equation also showed a substantial improvement, with rMAE decreasing by approximately **95%**.
-* For Allen–Cahn, PINNsFormer significantly improved the approximation, although the final error remained relatively high.
-* The improved accuracy came at a substantial computational cost, with approximately **13× longer training time on average**.
+- Each PDE problem is implemented in a separate notebook.
+- Random seeds are set for NumPy, Python, and PyTorch.
+- The notebooks include the data-loading, model-training, and evaluation procedures.
+- External reference datasets are downloaded automatically where required.
+- Training time and numerical results may vary slightly across hardware and software environments.
+
+## Reference
+
+Zhao, Z., Ding, X., & Prakash, B. (2024). *PINNsFormer: A Transformer-Based Framework for Physics-Informed Neural Networks*. International Conference on Learning Representations (ICLR 2024).
+
